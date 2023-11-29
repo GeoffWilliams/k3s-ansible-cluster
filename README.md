@@ -1,5 +1,7 @@
 
-## workstation setup
+## Workstation setup
+
+Install python first, [pyenv](https://github.com/pyenv/pyenv#installation) is the way to manage Python version, dont bother using the system or vendor python.
 
 ```shell
 pip install ansible
