@@ -71,6 +71,16 @@ ansible-playbook playbook/longhorn_prereqs.yml -i inventory.yml
 
 [See instructions](https://longhorn.io/docs/1.5.3/deploy/install/install-with-helm/#installing-longhorn)
 
+To adjust where longhorn stores data, adjust the helm install command:
+
+```shell
+helm upgrade --install longhorn longhorn/longhorn --namespace longhorn-system --create-namespace --version 1.5.3 --set defaultSettings.defaultDataPath=/data/longhorn
+```
+
+* This will let you store data on some other volume than the default `/var/lib/longhorn/` which is normally on the root partition.
+* This is good if you want to attach an extra SSD at `/data`, although you could probably just use symlinks.
+* If you need to upgrade storage with extra SSDs they can be mounted to this directory and the old files moved onto the new partition
+
 **docker hub may throttle downloads, be patient if you see `ImagePullBackOff`** errors, they should resolve eventually
 
 After installation, create a simple Istio ingress to access the UI:
@@ -84,3 +94,8 @@ kubectl apply -f longhorn_ingress.yaml
 * This is a basic setup with no authentication to get you up and running, do something fancy with Istio or [follow the official guide](https://longhorn.io/docs/1.5.3/deploy/accessing-the-ui/longhorn-ingress/) to add access control
 
 If you are able to access the UI, [go head and add volumes](https://longhorn.io/docs/1.5.3/volumes-and-nodes/)
+
+## Uninstalling longhorn
+
+* Dont just delete the helm chart it wont work. This is to avoid accidentally destroying important storage
+* [Follow the guide](https://longhorn.io/docs/1.5.3/deploy/uninstall/). There is a command to patch the delete confirmation setting
