@@ -55,3 +55,32 @@ fatal: [cloud]: FAILED! => {"changed": true, "cmd": "/usr/local/bin/k3s-install.
 ```shell
 ansible-playbook playbook/upgrade.yml -i ../inventory.yml --vault-password-file ~/ansible_password.txt
 ```
+
+## Longhorn
+
+### Prereqs
+* Run from top level of this repository
+* [Ansible will format messages with `cowsay` if the package is installed](https://docs.ansible.com/ansible/latest/reference_appendices/faq.html#how-do-i-disable-cowsay). This amuses me.
+* Mount propagation is on by default in k3s > ~0.10.0 so nothing needed to enable it
+
+```shell
+ansible-playbook playbook/longhorn_prereqs.yml -i inventory.yml
+```
+
+### Install with helm
+
+[See instructions](https://longhorn.io/docs/1.5.3/deploy/install/install-with-helm/#installing-longhorn)
+
+**docker hub may throttle downloads, be patient if you see `ImagePullBackOff`** errors, they should resolve eventually
+
+After installation, create a simple Istio ingress to access the UI:
+
+```shell
+kubectl apply -f longhorn_ingress.yaml
+```
+
+* Adjust as needed
+* Add the hostname for longhorn UI to your DNS
+* This is a basic setup with no authentication to get you up and running, do something fancy with Istio or [follow the official guide](https://longhorn.io/docs/1.5.3/deploy/accessing-the-ui/longhorn-ingress/) to add access control
+
+If you are able to access the UI, [go head and add volumes](https://longhorn.io/docs/1.5.3/volumes-and-nodes/)

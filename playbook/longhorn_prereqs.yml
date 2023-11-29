@@ -1,0 +1,23 @@
+- name: longhorn prereqs
+  hosts: all
+  become: true
+  become_user: root
+  tasks:
+  - name: install packages
+    ansible.builtin.apt:
+      name:
+      - open-iscsi
+      - nfs-common
+      - bash
+      - curl
+      # provided buy util-linux: findmnt, blkid, lsblk
+      - util-linux
+      - grep
+      - gawk
+      update_cache: yes
+
+  - name: iscsi tcp module
+    community.general.modprobe:
+      name: iscsi_tcp
+      state: present
+      persistent: present
