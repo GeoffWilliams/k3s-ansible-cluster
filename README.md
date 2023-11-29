@@ -93,7 +93,30 @@ kubectl apply -f longhorn_ingress.yaml
 * Add the hostname for longhorn UI to your DNS
 * This is a basic setup with no authentication to get you up and running, do something fancy with Istio or [follow the official guide](https://longhorn.io/docs/1.5.3/deploy/accessing-the-ui/longhorn-ingress/) to add access control
 
-If you are able to access the UI, [go head and add volumes](https://longhorn.io/docs/1.5.3/volumes-and-nodes/)
+If your able to access the UI your in business.
+
+## Using Longhorn storage
+
+* [Follow the guide](https://longhorn.io/docs/1.5.3/volumes-and-nodes/)
+
+Some notes:
+
+* `longhorn` storage class is already created after helm install
+* You just need to create PVCs to access the storage needed
+
+## Migrating data
+
+Now longhorn is setup, there is probably some old data that needs to be imported, so follow these steps:
+
+Source: https://forums.rancher.com/t/move-existing-data-into-longhorn/20017/2
+
+> 1. You have an old PVC with old volume data
+> 2. Create new PVC using longhorn StorageClass
+> 3. Deploy this [example data migration pod](https://github.com/longhorn/longhorn/blob/master/examples/data_migration.yaml) to copy the data from old PVC to the new PVC.
+
+There are also a few other ways of moving data on the same forum thread.
+
+
 
 ## Uninstalling longhorn
 
