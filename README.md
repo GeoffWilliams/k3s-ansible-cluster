@@ -27,19 +27,19 @@ ansible -m ping -i hosts.yml "*"
 
 * You MUST run the ansible command from inside the `k3s-ansible` directory you checked out or you will get errors about missing roles
 * These docs were prepared with version: `1e8bfb0d3967defe66929616f50a2f40d2470a87` from 2023-11-27
-* `k3s_version` is set in `inventory.yml` to install a specific version. This gives us repeatable deployments and not random versions
+* `k3s_version` is set in `hosts.yml` to install a specific version. This gives us repeatable deployments and not random versions
 * For available versions check the [k3s releases page on github](https://github.com/k3s-io/k3s/releases)
 
 ## Install
 
 ```shell
-ansible-playbook playbook/site.yml -i ../inventory.yml --vault-password-file ~/ansible_password.txt
+ansible-playbook playbook/site.yml -i ../hosts.yml --vault-password-file ~/ansible_password.txt
 ```
 
 Optionally limit the hosts processed, like this:
 
 ```shell
-ansible-playbook playbook/site.yml -i ../inventory.yml --vault-password-file ~/ansible_password.txt -l k3s-worker-a
+ansible-playbook playbook/site.yml -i ../hosts.yml --vault-password-file ~/ansible_password.txt -l k3s-worker-a
 ```
 
 ## Upgrade
@@ -53,7 +53,7 @@ fatal: [cloud]: FAILED! => {"changed": true, "cmd": "/usr/local/bin/k3s-install.
 * You can choose to upgrade nodes one by one (`-l ...`) or just let rip
 
 ```shell
-ansible-playbook playbook/upgrade.yml -i ../inventory.yml --vault-password-file ~/ansible_password.txt
+ansible-playbook playbook/upgrade.yml -i ../hosts.yml --vault-password-file ~/ansible_password.txt
 ```
 
 ## Longhorn
@@ -64,7 +64,7 @@ ansible-playbook playbook/upgrade.yml -i ../inventory.yml --vault-password-file 
 * Mount propagation is on by default in k3s > ~0.10.0 so nothing needed to enable it
 
 ```shell
-ansible-playbook playbook/longhorn_prereqs.yml -i inventory.yml
+ansible-playbook playbook/longhorn_prereqs.yml -i hosts.yml
 ```
 
 ### Install with helm
@@ -74,11 +74,12 @@ ansible-playbook playbook/longhorn_prereqs.yml -i inventory.yml
 To adjust where longhorn stores data, adjust the helm install command:
 
 ```shell
-helm upgrade --install longhorn longhorn/longhorn --namespace longhorn-system --create-namespace --version 1.5.3 --set defaultSettings.defaultDataPath=/data/longhorn
+helm upgrade --install longhorn longhorn/longhorn --namespace longhorn-system --create-namespace --version 1.5.3 --values=longhorn_values.yaml
 ```
 
 * This will let you store data on some other volume than the default `/var/lib/longhorn/` which is normally on the root partition.
-* This is good if you want to attach an extra SSD at `/data`, although you could probably just use symlinks.
+* This is good if you want to attach an extra SSD at `/data`.
+* Symlinks will not work without special attention as link will not propagate insdie of kubernetes. If you have "special snowflake" server that needs data at a different location to the others, its easier to just edit the node in the UI
 * If you need to upgrade storage with extra SSDs they can be mounted to this directory and the old files moved onto the new partition
 
 **docker hub may throttle downloads, be patient if you see `ImagePullBackOff`** errors, they should resolve eventually
@@ -95,14 +96,40 @@ kubectl apply -f longhorn_ingress.yaml
 
 If your able to access the UI your in business.
 
-## Using Longhorn storage
+## Testing Longhorn
 
 * [Follow the guide](https://longhorn.io/docs/1.5.3/volumes-and-nodes/)
-
-Some notes:
-
 * `longhorn` storage class is already created after helm install
 * You just need to create PVCs to access the storage needed
+
+Create a test volume and make sure data shows up in the right place (adapted from the guide):
+
+```shell
+kubectl create -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/examples/pod_with_pvc.yaml
+
+# wait some seconds...
+kubectl exec -ti volume-test -- sh
+```
+
+Inside the container, create a 1GB test file:
+
+```shell
+dd if=/dev/zero of=/data/atest bs=1M count=1000
+```
+
+Now look on the node filesystems, you should see ~1GB usage with `du -sh` in the data directory which will either be the default of `/var/lib/longhorn` or a custom directory like `/data/longhorn` if this was set when deploying with helm.
+
+Also click around the longhorn UI and inspect the volume.
+
+When satisfied its working, delete the pod:
+
+```shell
+kubectl delete -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/examples/pod_with_pvc.yaml
+```
+
+With the default retention settings this will destroy the pod, the PVC and the actual data on disk. You can prove this by re-running the previous `du` command.
+
+If this works you can start using longhorn for your storage needs.
 
 ## Migrating data
 
@@ -117,8 +144,14 @@ Source: https://forums.rancher.com/t/move-existing-data-into-longhorn/20017/2
 There are also a few other ways of moving data on the same forum thread.
 
 
-
 ## Uninstalling longhorn
+
+To reset your lab:
 
 * Dont just delete the helm chart it wont work. This is to avoid accidentally destroying important storage
 * [Follow the guide](https://longhorn.io/docs/1.5.3/deploy/uninstall/). There is a command to patch the delete confirmation setting
+
+```shell
+kubectl -n longhorn-system patch -p '{"value": "true"}' --type=merge lhs deleting-confirmation-flag
+helm uninstall --namespace longhorn-system longhorn
+```
