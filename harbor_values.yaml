@@ -1,0 +1,44 @@
+externalURL: https://harbor.lan.asio
+
+expose:
+  tls:
+    enabled: true
+    certSource: secret
+    secret:
+      secretName: tls-wildcard
+  ingress:
+    className: istio
+    hosts:
+      core: harbor.lan.asio
+    annotations:
+      kubernetes.io/ingress.class: istio
+      ingress.kubernetes.io/force-ssl-redirect: "true"
+
+persistence:
+  resourcePolicy: "delete"
+  persistentVolumeClaim:
+    registry:
+      storageClass: longhorn
+      accessMode: ReadWriteMany
+    jobservice:
+      jobLog:
+        storageClass: longhorn
+        accessMode: ReadWriteMany
+    database:
+      storageClass: longhorn
+      accessMode: ReadWriteMany
+
+portal:
+  replicas: 2
+
+core:
+  replicas: 2
+
+jobservice:
+  replicas: 2
+
+registry:
+  replicas: 2
+
+chartmuseum:
+  replicas: 2

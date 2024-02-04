@@ -8,7 +8,7 @@ spec:
   hosts:
   - 'longhorn.lan.asio'
   gateways:
-  - gateway
+  - istio-ingressgateway
   http:
   - route:
     - destination:

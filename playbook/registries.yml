@@ -1,0 +1,26 @@
+- name: registries
+  hosts: servers
+  become: true
+  become_user: root
+  tasks:
+
+  - name: registries.yaml
+    ansible.builtin.copy:
+      src: ../registries.yaml
+      dest: /etc/rancher/k3s/registries.yaml
+      owner: root
+      group: root
+      mode: '0600'
+
+  - name: ca.pem
+    ansible.builtin.copy:
+      src: ~/ca/ca.pem
+      dest: /etc/rancher/k3s/ca.pem
+      owner: root
+      group: root
+      mode: '0600'
+
+  - name: k3s
+    ansible.builtin.systemd_service:
+      state: restarted
+      name: k3s

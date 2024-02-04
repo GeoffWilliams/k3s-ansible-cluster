@@ -56,7 +56,36 @@ fatal: [cloud]: FAILED! => {"changed": true, "cmd": "/usr/local/bin/k3s-install.
 ansible-playbook playbook/upgrade.yml -i ../hosts.yml --vault-password-file ~/ansible_password.txt
 ```
 
+## Istio
+
+* [instructions](https://istio.io/latest/docs/setup/install/helm/)
+* [charts](https://github.com/istio/istio/tree/master/manifests/charts)
+* more docs: https://tetrate.io/blog/istio-ingressclass-controller-with-helm/
+
+```shell
+helm repo add istio https://istio-release.storage.googleapis.com/charts
+helm repo update
+
+kubectl create namespace istio-system
+
+helm upgrade --install istio-base istio/base -n istio-system --set defaultRevision=default --version=1.20.2
+
+helm upgrade --install istiod istio/istiod -n istio-system --wait --version=1.20.2 --values istiod_values.yaml
+kubectl create namespace istio-ingress
+
+helm upgrade --install istio-ingressgateway istio/gateway -n istio-ingress --values istio_gateway_values.yaml --version=1.20.2
+```
+
+gateways:
+
+```shell
+kubectl create -n istio-ingress secret tls tls-wildcard   --key=/home/geoff/ca/wildcard.lan.asio.key   --cert=/home/geoff/ca/wildcard.lan.asio.pem
+kubectl apply -f gateway.yaml
+```
+
 ## Longhorn
+
+[Chart sourcecode](https://github.com/longhorn/charts)
 
 ### Prereqs
 * Run from top level of this repository
@@ -74,6 +103,9 @@ ansible-playbook playbook/longhorn_prereqs.yml -i hosts.yml
 To adjust where longhorn stores data, adjust the helm install command:
 
 ```shell
+helm repo add longhorn https://charts.longhorn.io
+helm repo update
+
 helm upgrade --install longhorn longhorn/longhorn --namespace longhorn-system --create-namespace --version 1.5.3 --values=longhorn_values.yaml
 ```
 
@@ -96,7 +128,7 @@ kubectl apply -f longhorn_ingress.yaml
 
 If your able to access the UI your in business.
 
-## Testing Longhorn
+### Testing Longhorn
 
 * [Follow the guide](https://longhorn.io/docs/1.5.3/volumes-and-nodes/)
 * `longhorn` storage class is already created after helm install
@@ -131,7 +163,7 @@ With the default retention settings this will destroy the pod, the PVC and the a
 
 If this works you can start using longhorn for your storage needs.
 
-## Migrating data
+### Migrating data
 
 Now longhorn is setup, there is probably some old data that needs to be imported, so follow these steps:
 
@@ -143,8 +175,7 @@ Source: https://forums.rancher.com/t/move-existing-data-into-longhorn/20017/2
 
 There are also a few other ways of moving data on the same forum thread.
 
-
-## Uninstalling longhorn
+### Uninstalling longhorn
 
 To reset your lab:
 
@@ -154,4 +185,29 @@ To reset your lab:
 ```shell
 kubectl -n longhorn-system patch -p '{"value": "true"}' --type=merge lhs deleting-confirmation-flag
 helm uninstall --namespace longhorn-system longhorn
+```
+
+## Harbor
+
+[Install via helm: instructions](https://goharbor.io/docs/2.10.0/install-config/harbor-ha-helm/)
+
+### Install helm chart
+
+[Chart sourcescode](https://github.com/goharbor/harbor-helm)
+
+
+```shell
+helm repo add harbor https://helm.goharbor.io
+helm repo update
+
+kubectl create namespace harbor
+kubectl label namespace harbor istio-injection=enabled
+
+helm upgrade --install harbor harbor/harbor --namespace harbor --version 1.14.0 --values=harbor_values.yaml --set harborAdminPassword=$(cat ~/harbor_admin_password.txt)
+```
+
+## Uninstall
+
+```shell
+helm uninstall -n harbor harbor
 ```

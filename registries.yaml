@@ -1,0 +1,13 @@
+mirrors:
+  docker.io:
+    endpoint:
+      - "https://harbor.lan.asio/proxy_cache"
+configs:
+  "harbor.lan.asio":
+    auth:
+      username: "robot$k3s" # this is the registry username
+      password: "UymX5zc5gvJvLY6Vy7fFFSAmBJsNAzO7" # this is the registry password
+    tls:
+      # cert_file: # path to the cert file used in the registry
+      # key_file:  # path to the key file used in the registry
+      ca_file: "/etc/rancher/k3s/ca.pem"  # path to the ca file used in the registry
