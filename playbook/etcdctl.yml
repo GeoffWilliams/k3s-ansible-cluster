@@ -1,0 +1,37 @@
+- name: registries
+  hosts: server
+  become: true
+  become_user: root
+  vars:
+    etcd_version: v3.5.12
+    etcd_basename: "etcd-{{ etcd_version }}-linux-amd64"
+    etcd_tarball: "{{ etcd_basename }}.tar.gz"
+  tasks:
+
+  - name: Download etcdctl
+    ansible.builtin.get_url:
+      url: "https://github.com/etcd-io/etcd/releases/download/{{ etcd_version }}/{{ etcd_tarball }}"
+      dest: "/usr/local/{{ etcd_tarball }}"
+      mode: '0644'
+
+  - name: extract etcdctl tarball
+    ansible.builtin.unarchive:
+      src: "/usr/local/{{ etcd_tarball }}"
+      dest: /usr/local
+      remote_src: true
+
+  - name: link etcdctl
+    ansible.builtin.file:
+      src: "/usr/local/{{ etcd_basename }}/etcdctl"
+      dest: /usr/local/bin/etcdctl
+      owner: root
+      group: root
+      state: link
+
+  - name: link etcd
+    ansible.builtin.file:
+      src: "/usr/local/{{ etcd_basename }}/etcd"
+      dest: /usr/local/bin/etcd
+      owner: root
+      group: root
+      state: link

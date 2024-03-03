@@ -1,6 +1,7 @@
 service:
   annotations:
-    metallb.universe.tf/loadBalancerIPs: 192.168.3.8
+    metallb.universe.tf/loadBalancerIPs: 172.20.1.100
+    kube-vip.io/loadbalancerIPs: 172.20.1.100
   ports:
   - name: http
     port: 80

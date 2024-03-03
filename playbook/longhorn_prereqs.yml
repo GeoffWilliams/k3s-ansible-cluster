@@ -14,11 +14,35 @@
       - util-linux
       - grep
       - gawk
+
+      # not longhorn just for funsies
+      - bmon
+      - ipvsadm
+      - tcpdump
+      - arping
       update_cache: yes
 
-  - name: iscsi tcp module
+  - name: kmod - iscsi_tcp
     community.general.modprobe:
       name: iscsi_tcp
+      state: present
+      persistent: present
+
+  - name: kmod - uio
+    community.general.modprobe:
+      name: uio
+      state: present
+      persistent: present
+
+  - name: kmod - uio_pci_generic
+    community.general.modprobe:
+      name: uio_pci_generic
+      state: present
+      persistent: present
+
+  - name: kmod - nvme-tcp``
+    community.general.modprobe:
+      name: nvme-tcp
       state: present
       persistent: present
 
@@ -26,18 +50,23 @@
   #   failed to create fsnotify watcher: too many open files
   # https://serverfault.com/questions/1137211/failed-to-create-fsnotify-watcher-too-many-open-files
   # - thanks Steven!
-  - name: increase fs.notify.max.user_watches
+  - name: sysctl - fs.notify.max.user_watches
     ansible.posix.sysctl:
       name: fs.inotify.max_user_watches
       value: '2099999999'
       state: present
-  - name: increase fs.inotify.max_user_instances
+  - name: sysctl - fs.inotify.max_user_instances
     ansible.posix.sysctl:
       name: fs.inotify.max_user_instances
       value: '2099999999'
       state: present
-  - name: increase fs.inotify.max_queued_events
+  - name: sysctl - fs.inotify.max_queued_events
     ansible.posix.sysctl:
       name: fs.inotify.max_queued_events
       value: '2099999999'
+      state: present
+  - name: sysctl - vm.nr_hugepages
+    ansible.posix.sysctl:
+      name: vm.nr_hugepages
+      value: "1024"
       state: present

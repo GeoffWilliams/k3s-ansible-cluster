@@ -1,0 +1,34 @@
+- name: kube-vip
+  hosts: server
+  become: true
+  become_user: root
+  vars:
+    k8s_bootstrap_dir: /var/lib/rancher/k3s/server/manifests
+  tasks:
+  - name: "dir - {{ k8s_bootstrap_dir }}"
+    ansible.builtin.file:
+      path: "{{ k8s_bootstrap_dir }}"
+      state: directory
+      recurse: yes
+      owner: root
+      group: root
+      mode: 0775
+
+  - name: install kube-vip-daemonset.sh
+    ansible.builtin.copy:
+      src: "kube-vip/kube-vip-daemonset.sh"
+      dest: /usr/local/bin/kube-vip-daemonset.sh
+      owner: root
+      group: root
+      mode: "0755"
+
+  - name: install kube-vip-daemonset.sh
+    ansible.builtin.copy:
+      src: "kube-vip/kube-vip-rbac.yaml"
+      dest: "{{ k8s_bootstrap_dir }}/kube-vip-rbac.yaml"
+      owner: root
+      group: root
+      mode: "0644"
+
+  - name: kube-vip daemonset
+    ansible.builtin.command: /usr/local/bin/kube-vip-daemonset.sh

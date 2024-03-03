@@ -1,0 +1,12 @@
+- name: registries
+  hosts: all
+  become: true
+  become_user: root
+  tasks:
+  - name: kernel command line
+    ansible.builtin.lineinfile:
+      path: /etc/default/grub
+      regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
+      line: "GRUB_CMDLINE_LINUX_DEFAULT=\"text hugepagesz=2M hugepages=2048\""
+  - name: update-grub
+    ansible.builtin.command: /usr/sbin/update-grub

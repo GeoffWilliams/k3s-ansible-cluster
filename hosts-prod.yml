@@ -1,10 +1,11 @@
 k3s_cluster:
   vars:
     ansible_user: geoff
-    k3s_version: v1.29.0+k3s1
-    extra_server_args: "--tls-san='k3s.lan.asio,k3s' --disable traefik --disable servicelb --flannel-backend host-gw"
-    extra_agent_args: ""
-    api_endpoint: "k3s.lan.asio"
+    k3s_version: v1.29.1+k3s2
+    # previously --flannel-backend host-gw
+    extra_server_args: "--tls-san='k3s-prod.lan.asio,k3s-prod' --disable traefik --disable servicelb --flannel-backend vxlan --kube-proxy-arg ipvs-strict-arp=true --kube-proxy-arg proxy-mode=ipvs"
+    extra_agent_args: "--kube-proxy-arg ipvs-strict-arp=true --kube-proxy-arg proxy-mode=ipvs"
+    api_endpoint: "k3s-prod.lan.asio"
     token: !vault |
               $ANSIBLE_VAULT;1.1;AES256
               31633662663162653535303834616534636432336161373534386432303130306132353932656463
@@ -20,10 +21,10 @@ k3s_cluster:
   children:
     server:
       hosts:
-        k3s-a.lan.asio:
-        k3s-b.lan.asio:
-        k3s-c.lan.asio:
+        k3s-prod-server-0.lan.asio:
+        k3s-prod-server-1.lan.asio:
+        k3s-prod-server-2.lan.asio:
     agent:
       hosts:
         cloud.lan.asio:
-        k3s-worker-bpm-r1.lan.asio:
+        k3s-prod-agent-bpm-r1.lan.asio:

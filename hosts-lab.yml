@@ -1,0 +1,22 @@
+k3s_cluster:
+  vars:
+    ansible_user: geoff
+    k3s_version: v1.29.1+k3s2
+    extra_server_args: "--tls-san='k3s-lab-server-0.lan.asio,k3s-lab-server-0,k3s-lab,k3s-lab.lan.asio' --disable traefik --disable servicelb --flannel-backend vxlan --kube-proxy-arg ipvs-strict-arp=true --kube-proxy-arg proxy-mode=ipvs"
+    extra_agent_args: "--kube-proxy-arg ipvs-strict-arp=true --kube-proxy-arg proxy-mode=ipvs"
+    api_endpoint: k3s-lab-server-0.lan.asio
+    token: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          31633730623437613833373131383936393062316439356162656335653666303765626637386234
+          3666383739383634623332653166366539646332383361620a633638613464343965333765323436
+          30333933336130616133316234363635666538363766623032656336343661636166613061313938
+          6661343631396465360a363063396635363135323036396233643661346265353665393633613265
+          34626632346435373638653132306631363635643765313537353861306530366239
+  children:
+    server:
+      hosts:
+        k3s-lab-server-0:
+    agent:
+      hosts:
+        k3s-lab-agent-0:
+        k3s-lab-agent-1:
