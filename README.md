@@ -1,3 +1,11 @@
+# Status
+
+> This is some very old and unstructured codes, the odd line might help you but don't try to pick up and use :)
+
+
+
+
+
 
 ## Workstation setup
 
