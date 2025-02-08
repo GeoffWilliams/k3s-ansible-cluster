@@ -18,15 +18,19 @@ persistence:
   resourcePolicy: "delete"
   persistentVolumeClaim:
     registry:
-      storageClass: longhorn
+      storageClass: rook-cephfs
       accessMode: ReadWriteMany
     jobservice:
       jobLog:
-        storageClass: longhorn
+        storageClass: rook-cephfs
         accessMode: ReadWriteMany
     database:
-      storageClass: longhorn
+      storageClass: rook-cephfs
       accessMode: ReadWriteMany
+    redis:
+      storageClass: rook-ceph-block
+    trivy:
+      storageClass: rook-ceph-block
 
 portal:
   replicas: 2

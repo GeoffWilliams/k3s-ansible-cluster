@@ -1,0 +1,14 @@
+service:
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 10.50.1.100
+    kube-vip.io/loadbalancerIPs: 10.50.1.100
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    protocol: TCP
+  - name: https
+    port: 443
+    targetPort: 443
+    protocol: TCP
+

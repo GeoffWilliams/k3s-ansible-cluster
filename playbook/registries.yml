@@ -1,8 +1,15 @@
 - name: registries
-  hosts: server
+  hosts: all
   become: true
   become_user: root
   tasks:
+
+  - ansible.builtin.file:
+      path: /etc/rancher/k3s/
+      state: directory
+      owner: root
+      group: root
+      mode: "0700"
 
   - name: registries.yaml
     ansible.builtin.copy:
@@ -20,7 +27,9 @@
       group: root
       mode: '0600'
 
+  # k3s service on servers: "k3s"
+  # k3s service on agents: "k3s-agent"
   - name: k3s
     ansible.builtin.systemd_service:
       state: restarted
-      name: k3s
+      name: "{{ ('server' in group_names)|ternary('k3s', 'k3s-agent') }}"

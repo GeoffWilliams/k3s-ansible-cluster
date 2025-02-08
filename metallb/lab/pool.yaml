@@ -1,0 +1,10 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: default
+  namespace: metallb-system
+spec:
+  addresses:
+  # Address pool MetalLB will allocate from, adjust your router to not
+  # allocate address in this range to prevent clash
+  - 10.50.2.5-10.50.2.100

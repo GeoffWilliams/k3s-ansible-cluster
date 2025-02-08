@@ -33,7 +33,7 @@ ansible -m ping -i hosts.yml "*"
 ## Install
 
 ```shell
-ansible-playbook playbook/site.yml -i ../hosts.yml --vault-password-file ~/ansible_password.txt
+ansible-playbook playbooks/site.yml -i ../hosts.yml --vault-password-file ~/ansible_password.txt
 ```
 
 Optionally limit the hosts processed, like this:
@@ -56,6 +56,20 @@ fatal: [cloud]: FAILED! => {"changed": true, "cmd": "/usr/local/bin/k3s-install.
 ansible-playbook playbook/upgrade.yml -i ../hosts.yml --vault-password-file ~/ansible_password.txt
 ```
 
+# metallb
+```shell
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.5/config/manifests/metallb-native.yaml
+
+# lab
+kubectl apply -f metallb/lab/advertisement.yaml
+kubectl apply -f metallb/lab/pool.yaml
+
+# prod
+kubectl apply -f metallb/prod/advertisement.yaml
+kubectl apply -f metallb/prod/pool.yaml
+```
+
+
 ## Istio
 
 * [instructions](https://istio.io/latest/docs/setup/install/helm/)
@@ -70,10 +84,12 @@ kubectl create namespace istio-system
 
 helm upgrade --install istio-base istio/base -n istio-system --set defaultRevision=default --version=1.20.2
 
-helm upgrade --install istiod istio/istiod -n istio-system --wait --version=1.20.2 --values istiod_values.yaml
+helm upgrade --install istiod istio/istiod -n istio-system --wait --version=1.20.2  #--values istiod_values.yaml
 kubectl create namespace istio-ingress
 
-helm upgrade --install istio-ingressgateway istio/gateway -n istio-ingress --values istio_gateway_values.yaml --version=1.20.2
+# pick one
+helm upgrade --install istio-ingressgateway istio/gateway -n istio-ingress --values istio_gateway_values_lab.yaml --version=1.20.2
+helm upgrade --install istio-ingressgateway istio/gateway -n istio-ingress --values istio_gateway_values_prod.yaml --version=1.20.2
 ```
 
 gateways:
@@ -81,6 +97,20 @@ gateways:
 ```shell
 kubectl create -n istio-ingress secret tls tls-wildcard   --key=/home/geoff/ca/wildcard.lan.asio.key   --cert=/home/geoff/ca/wildcard.lan.asio.pem
 kubectl apply -f gateway.yaml
+```
+
+## openEBS
+
+```
+helm repo add openebs https://openebs.github.io/charts
+helm repo update
+helm install openebs --namespace openebs openebs/openebs --create-namespace
+
+# jiva
+kubectl apply -f https://openebs.github.io/charts/jiva-operator.yaml
+
+helm install openebs --namespace openebs openebs/openebs --set mayastor.enabled=true --create-namespace
+
 ```
 
 ## Longhorn

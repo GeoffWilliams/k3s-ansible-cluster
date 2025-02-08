@@ -20,6 +20,7 @@
       - ipvsadm
       - tcpdump
       - arping
+      - ceph-osd
       update_cache: yes
 
   - name: kmod - iscsi_tcp

@@ -1,7 +1,7 @@
 k3s_cluster:
   vars:
     ansible_user: geoff
-    k3s_version: v1.29.1+k3s2
+    k3s_version: v1.31.2+k3s1
     extra_server_args: "--tls-san='k3s-lab-server-0.lan.asio,k3s-lab-server-0,k3s-lab,k3s-lab.lan.asio' --disable traefik --disable servicelb --flannel-backend vxlan --kube-proxy-arg ipvs-strict-arp=true --kube-proxy-arg proxy-mode=ipvs"
     extra_agent_args: "--kube-proxy-arg ipvs-strict-arp=true --kube-proxy-arg proxy-mode=ipvs"
     api_endpoint: k3s-lab-server-0.lan.asio

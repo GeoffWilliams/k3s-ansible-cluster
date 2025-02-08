@@ -3,8 +3,5 @@ kind: L2Advertisement
 metadata:
   name: default-advertisement
   namespace: metallb-system
-spec:
-  nodeSelectors:
-  - matchLabels:
-      kubernetes.io/hostname: cloud.lan.asio
+
 

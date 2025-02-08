@@ -1,10 +1,10 @@
 k3s_cluster:
   vars:
     ansible_user: geoff
-    k3s_version: v1.29.1+k3s2
+    k3s_version: v1.29.4+k3s1
     # previously --flannel-backend host-gw
-    extra_server_args: "--tls-san='k3s-prod.lan.asio,k3s-prod' --disable traefik --disable servicelb --flannel-backend vxlan --kube-proxy-arg ipvs-strict-arp=true --kube-proxy-arg proxy-mode=ipvs"
-    extra_agent_args: "--kube-proxy-arg ipvs-strict-arp=true --kube-proxy-arg proxy-mode=ipvs"
+    extra_server_args: "--tls-san='k3s-prod.lan.asio,k3s-prod' --disable traefik --disable servicelb --flannel-backend vxlan --kube-proxy-arg ipvs-strict-arp=true --kube-proxy-arg proxy-mode=ipvs --flannel-iface=br50"
+    extra_agent_args: "--kube-proxy-arg ipvs-strict-arp=true --kube-proxy-arg proxy-mode=ipvs --flannel-iface=br50"
     api_endpoint: "k3s-prod.lan.asio"
     token: !vault |
               $ANSIBLE_VAULT;1.1;AES256
@@ -20,11 +20,16 @@ k3s_cluster:
 
   children:
     server:
+      # order important ! the FIRST node will started with --init-node, so move the first node
+      # to be not first if you dont want to init
       hosts:
+        k3s-prod-server-3.lan.asio:
         k3s-prod-server-0.lan.asio:
         k3s-prod-server-1.lan.asio:
         k3s-prod-server-2.lan.asio:
-    agent:
-      hosts:
         cloud.lan.asio:
-        k3s-prod-agent-bpm-r1.lan.asio:
+
+
+    # agent:
+    #   hosts:
+    #     # for example

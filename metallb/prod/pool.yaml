@@ -7,4 +7,5 @@ spec:
   addresses:
   # Address pool MetalLB will allocate from, adjust your router to not
   # allocate address in this range to prevent clash
-  - 192.168.3.5-192.168.3.99
+  # - 172.20.1.100-172.20.1.250
+  - 10.50.1.100-10.50.1.250
